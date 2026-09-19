@@ -1,0 +1,40 @@
+name: Continuous Integration - Delivery
+
+on:
+  push:
+    branches: [ main ] 
+    tags: [ "*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v7
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v6
+      with:
+        global-json-file: ${{ github.workspace }}/global,json 
+
+    - name: Publish
+      working-directory: ${{ github.workspace }}/src/themes/
+      run: dotnet publish ./themes.csproj -c Release -o ${{ github.workspace }}/release /p:BlazorEnableCompression=false
+
+    - name: Setup base path
+      run: |
+        sed -i 's/<base href="\/" \/>/<base href="\/memoana\/" \/>/g' ${{ github.workspace }}/release/wwwroot/index.html
+        touch ${{ github.workspace }}/release/wwwroot/.nojekyll
+        
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        folder: ${{ github.workspace }}/release/wwwroot 
+        branch: gh-pages 
+        clean: true 
