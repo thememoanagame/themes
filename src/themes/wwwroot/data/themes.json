@@ -2,19 +2,23 @@
   "themes": [
     {
       "id": "01a0bb9e-c408-74fa-b28d-b94d0ca5d009",
-      "name": "disney"
+      "name": "disney",
+      "url": "/assets/01a0bb9e-c408-74fa-b28d-b94d0ca5d009/d00_disney_01a0bbec-7a5d-770f-bdd9-3a2ddf48a2df.webp"
     },
     {
       "id": "01a0bbbe-4c37-730e-8d73-f92cb4930c18",
-      "name": "pokemon"
+      "name": "pokemon",
+      "url": "/assets/01a0bbbe-4c37-730e-8d73-f92cb4930c18/p00_pokemon_01a0bbec-7aac-716a-86fd-0b48511f7bb5.webp"
     },
     {
       "id": "01a0bbbe-bd62-766e-be86-4e8d1271d802",
-      "name": "marvel"
+      "name": "marvel",
+      "url": "/assets/01a0bbbe-bd62-766e-be86-4e8d1271d802/m00_marvel_01a0bbec-7ab3-7c17-aaf8-73b220eea517.webp"
     },
     {
       "id": "01a0bbbe-e0f4-7251-86c8-cc9bc84703d0",
-      "name": "cars"
+      "name": "cars",
+      "url": "/assets/01a0bbbe-e0f4-7251-86c8-cc9bc84703d0/c00_cars_01a0bbec-7abc-71ae-ad20-af0bd083848b.webp"
     }
   ]
 }
