@@ -26,7 +26,18 @@ if (themes.Length == 0)
 ValidateThemeCatalog(themes);
 
 var jsonOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-WriteJson(Path.Combine(outputRoot, "themes.json"), new { themes = themes.Select(t => new { id = t.Id.ToString("D"), name = t.Name }) }, jsonOptions);
+WriteJson(
+    Path.Combine(outputRoot, "themes.json"),
+    new
+    {
+        themes = themes.Select(theme => new
+        {
+            id = theme.Id.ToString("D"),
+            name = theme.Name,
+            url = $"/assets/{theme.Id:D}/{theme.SelectionFile}"
+        })
+    },
+    jsonOptions);
 
 foreach (var theme in themes)
 {
