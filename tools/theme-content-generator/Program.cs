@@ -63,6 +63,8 @@ WriteJson(
     },
     jsonOptions);
 
+File.Delete(versionFile);
+
 foreach (var theme in themes)
 {
     var themeOutput = Path.Combine(outputRoot, theme.Id.ToString("D"));
