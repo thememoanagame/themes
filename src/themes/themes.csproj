@@ -7,6 +7,19 @@
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ThemeVersionFile>$(IntermediateOutputPath)theme-version.txt</ThemeVersionFile>
+    <ThemeVersion Condition="'$(ThemeVersion)' == ''">$(InformationalVersion)</ThemeVersion>
+  </PropertyGroup>
+
+  <Target Name="WriteThemeVersionFile" BeforeTargets="BeforeBuild">
+    <WriteLinesToFile
+      File="$(ThemeVersionFile)"
+      Lines="$(ThemeVersion)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.*" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.*" PrivateAssets="all" />
