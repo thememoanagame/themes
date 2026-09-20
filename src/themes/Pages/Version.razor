@@ -1,0 +1,16 @@
+@page "/version"
+
+<PageTitle>Version</PageTitle>
+<MudText Typo="Typo.h3" GutterBottom="true">MemoAna Themes</MudText>
+<MudText>Application: static Blazor WebAssembly</MudText>
+<MudText>Version: @InformationalVersion</MudText>
+<MudText>Build: static</MudText>
+<MudText>Commit: @InformationalVersion</MudText>
+<MudText>Deployment timestamp: supplied by the deployment artifact when available</MudText>
+
+@code {
+    private static string InformationalVersion => typeof(Program).Assembly
+        .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+        .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+        .FirstOrDefault()?.InformationalVersion ?? "unknown";
+}

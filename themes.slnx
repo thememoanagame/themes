@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/themes/themes.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/theme-content-generator/theme-content-generator.csproj" />
+  </Folder>
 </Solution>

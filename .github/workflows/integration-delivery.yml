@@ -20,15 +20,19 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v6
       with:
-        global-json-file: ${{ github.workspace }}/global,json 
+        dotnet-version: 10.0.x
+
+    - name: Generate and validate theme metadata
+      run: dotnet run --project tools/theme-content-generator/theme-content-generator.csproj -- --assets src/themes/wwwroot/assets --output src/themes/wwwroot/data
 
     - name: Publish
       working-directory: ${{ github.workspace }}/src/themes/
-      run: dotnet publish ./themes.csproj -c Release -o ${{ github.workspace }}/release /p:BlazorEnableCompression=false
+      run: dotnet publish ./themes.csproj -c Release -o ${{ github.workspace }}/release /p:BlazorEnableCompression=false /p:InformationalVersion=${{ github.sha }}
 
     - name: Setup base path
       run: |
-        sed -i 's/<base href="\/" \/>/<base href="\/memoana\/" \/>/g' ${{ github.workspace }}/release/wwwroot/index.html
+        sed -i 's/<base href="\/" \/>/<base href="\/themes\/" \/>/g' ${{ github.workspace }}/release/wwwroot/index.html
+        cp ${{ github.workspace }}/release/wwwroot/index.html ${{ github.workspace }}/release/wwwroot/404.html
         touch ${{ github.workspace }}/release/wwwroot/.nojekyll
         
     - name: Deploy to GitHub Pages
@@ -36,5 +40,5 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         folder: ${{ github.workspace }}/release/wwwroot 
-        branch: gh-pages 
-        clean: true 
+      branch: gh-pages
+      clean: true

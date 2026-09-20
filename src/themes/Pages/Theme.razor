@@ -1,0 +1,28 @@
+@page "/theme"
+@using themes.Models
+@using themes.Services
+@inject ThemeCatalogService Catalog
+
+<PageTitle>Theme</PageTitle>
+<MudText Typo="Typo.h3" GutterBottom="true">Theme identification</MudText>
+@if (_manifest is null)
+{
+    <MudText>Provide a valid theme id or name using <code>?id=...</code>.</MudText>
+}
+else
+{
+    <MudText>Name: @_manifest.Name</MudText>
+    <MudText>GUID: @_manifest.Id</MudText>
+    <MudText>Manifest asset: @_manifest.Url</MudText>
+    <MudText>Checksum: @_manifest.Checksum</MudText>
+    <MudText>Cards: @_manifest.CardCount</MudText>
+    <MudText>Validation: @_manifest.ValidationStatus</MudText>
+    <MudText>Asset directory: @_manifest.AssetDirectory</MudText>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")] public string? Id { get; set; }
+    private ThemeManifest? _manifest;
+
+    protected override async Task OnParametersSetAsync() => _manifest = await Catalog.GetManifestAsync(Id);
+}
