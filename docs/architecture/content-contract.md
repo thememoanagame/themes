@@ -41,29 +41,16 @@ Card image names follow:
 /data/errors/*.json
 ```
 
-The version resource is the root catalog summary and contains the build version, theme count, catalog checksum, and theme names/selection URLs. The theme catalog remains available separately as `themes.json`.
+The root resource is `/data/version.json`. It contains the build version, theme count, catalog checksum, and theme names/selection URLs.
 
-The theme catalog has the following shape:
+The theme catalog is a separate resource at `/data/themes.json` and contains the same theme selection URLs.
 
-```json
-{
-  "themes": [
-    {
-      "id": "<theme-guid>",
-      "name": "<theme-name>",
-      "url": "/assets/<theme-guid>/<selection-file>.webp"
-    }
-  ]
-}
-```
+## Logical HTTP routes
 
-All generated JSON is UTF-8, deterministic, and stable in property meaning.
+When the static site is hosted at a domain root, the intended public routes are:
 
-## Query resolution
-
-The public static routes are browser-side resolvers:
-
-- `/themes` -> `/data/version.json`
+- `/` -> `/data/version.json`
+- `/themes` -> `/data/themes.json`
 - `/themes?id=<theme-guid>` -> `/data/<theme-guid>/manifest.json`
 - `/themes?name=<theme-name>` -> `/data/<theme-guid>/manifest.json`
 - `/cards?id=<theme-guid>` -> `/data/<theme-guid>/cards.json`
@@ -73,11 +60,24 @@ The public static routes are browser-side resolvers:
 
 The resolvers do not start Blazor WebAssembly. They are static HTML documents with minimal JavaScript.
 
+## GitHub Pages project-site mapping
+
+The current GitHub Pages deployment is the repository project site `/themes/`. Therefore the project-site base URL itself is already `/themes/` and cannot also represent a distinct `/themes` endpoint.
+
+For the current deployment:
+
+- `/themes/` -> `/themes/data/version.json`
+- `/themes/data/themes.json` -> theme catalog
+- `/themes/cards` -> cards resolver
+- `/themes?...` -> theme resolver with the query parameters
+
+A future custom-domain/root deployment can expose the logical `/` and `/themes` routes directly without this project-site path collision.
+
 ## Client resolution
 
 A MemoAna client should:
 
-1. Obtain the theme index.
+1. Obtain the theme index from `/data/themes.json`.
 2. Resolve the canonical ThemeId.
 3. Fetch the theme manifest/cards metadata.
 4. Download only the required WebP assets.
