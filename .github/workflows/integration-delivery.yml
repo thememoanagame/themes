@@ -23,6 +23,12 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Build and write deployment version
+      if: github.ref_type != 'tag'
+      working-directory: ${{ github.workspace }}/src/themes/
+      run: dotnet build ./themes.csproj -c Release
+
+    - name: Build and write tag version
+      if: github.ref_type == 'tag'
       working-directory: ${{ github.workspace }}/src/themes/
       run: dotnet build ./themes.csproj -c Release /p:ThemeVersion="${{ github.ref_name }}"
 
