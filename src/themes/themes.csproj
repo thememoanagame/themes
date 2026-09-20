@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ThemeVersionFile>$(IntermediateOutputPath)theme-version.txt</ThemeVersionFile>
+    <ThemeVersionFile>$(MSBuildProjectDirectory)/wwwroot/data/build-version.txt</ThemeVersionFile>
+    <ThemeVersion Condition="'$(ThemeVersion)' == '' and '$(GITHUB_REF_TYPE)' == 'tag'">$(GITHUB_REF_NAME)</ThemeVersion>
     <ThemeVersion Condition="'$(ThemeVersion)' == ''">$(InformationalVersion)</ThemeVersion>
   </PropertyGroup>
 
