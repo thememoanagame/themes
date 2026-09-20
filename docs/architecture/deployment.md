@@ -36,3 +36,9 @@ The generator must fail before publish when theme content violates the content c
 ## Caching
 
 Theme image files and generated JSON use stable URLs. Theme and card GUIDs must not be reused for different content after publication.
+
+## Version metadata
+
+`wwwroot/data/version.json` is generated during the build. A custom MSBuild target writes the resolved version to `wwwroot/data/build-version.txt` before the generator runs. The generator consumes that transient text file and removes it after producing `version.json`.
+
+When the build runs in GitHub Actions for a tag, the tag name is used as the version. Outside GitHub Actions, the assembly informational version is used. The version resource also contains the theme count, deterministic catalog checksum, and theme selection metadata.
