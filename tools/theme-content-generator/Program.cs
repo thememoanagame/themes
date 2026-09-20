@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 var argumentsMap = ParseArguments(args);
 var assetsRoot = Path.GetFullPath(argumentsMap.GetValueOrDefault("assets") ?? throw new ArgumentException("Missing --assets."));
 var outputRoot = Path.GetFullPath(argumentsMap.GetValueOrDefault("output") ?? throw new ArgumentException("Missing --output."));
+var versionFile = Path.GetFullPath(argumentsMap.GetValueOrDefault("version-file") ?? Path.Combine(outputRoot, "build-version.txt"));
 
 if (!Directory.Exists(assetsRoot))
     throw new DirectoryNotFoundException($"Assets directory does not exist: {assetsRoot}");
@@ -39,18 +40,26 @@ WriteJson(
     },
     jsonOptions);
 
+var version = File.Exists(versionFile)
+    ? File.ReadAllText(versionFile).Trim()
+    : throw new FileNotFoundException("The build version file was not produced.", versionFile);
+
+if (string.IsNullOrWhiteSpace(version))
+    throw new InvalidOperationException("The build version is empty.");
+
 WriteJson(
     Path.Combine(outputRoot, "version.json"),
     new
     {
+        version,
+        themeCount = themes.Length,
+        checksum = ThemeCatalogChecksum(themes),
         themes = themes.Select(theme => new
         {
             id = theme.Id.ToString("D"),
             name = theme.Name,
             url = $"/assets/{theme.Id:D}/{theme.SelectionFile}"
-        }),
-        themeCount = themes.Length,
-        checksum = ThemeCatalogChecksum(themes)
+        })
     },
     jsonOptions);
 
