@@ -188,8 +188,37 @@ static void WriteErrorResources(string outputRoot)
 static object Error(string code, string message, string resource, int status) =>
     new { error = new { code, message, resource, status } };
 
-static void WriteJson(string path, object value, JsonSerializerOptions options) =>
-    File.WriteAllText(path, JsonSerializer.Serialize(value, options) + Environment.NewLine, new UTF8Encoding(false));
+static void WriteJson(string path, object value, JsonSerializerOptions options)
+{
+    var json = JsonSerializer.Serialize(value, options);
+
+    if (string.IsNullOrWhiteSpace(json))
+        throw new InvalidOperationException($"Generated JSON is empty: {path}");
+
+    var directory = Path.GetDirectoryName(path)
+        ?? throw new InvalidOperationException($"Unable to determine the output directory for '{path}'.");
+
+    Directory.CreateDirectory(directory);
+
+    var temporaryPath = Path.Combine(
+        directory,
+        $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+
+    try
+    {
+        File.WriteAllText(temporaryPath, json + Environment.NewLine, new UTF8Encoding(false));
+
+        if (new FileInfo(temporaryPath).Length == 0)
+            throw new InvalidOperationException($"Generated JSON file is empty: {path}");
+
+        File.Move(temporaryPath, path, overwrite: true);
+    }
+    finally
+    {
+        if (File.Exists(temporaryPath))
+            File.Delete(temporaryPath);
+    }
+}
 
 static Dictionary<string, string> ParseArguments(string[] args)
 {
