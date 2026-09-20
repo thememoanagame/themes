@@ -42,7 +42,7 @@ The backend and theme host have intentionally different responsibilities. The ba
 
 The public query routes are implemented as static HTML documents and do not start Blazor WebAssembly.
 
-- `/themes` without query parameters redirects to `/data/themes.json`.
+- `/themes` without query parameters redirects to `/data/version.json`.
 - `/themes?id=<guid>` resolves the catalog and redirects to `/data/<guid>/manifest.json`.
 - `/themes?name=<name>` resolves the catalog and redirects to `/data/<guid>/manifest.json`.
 - `/cards?id=<guid>` resolves the catalog and redirects to `/data/<guid>/cards.json`.
