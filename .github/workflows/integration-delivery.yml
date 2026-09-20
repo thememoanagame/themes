@@ -22,17 +22,19 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
+    - name: Build and write deployment version
+      working-directory: ${{ github.workspace }}/src/themes/
+      run: dotnet build ./themes.csproj -c Release /p:ThemeVersion="${{ github.ref_name }}"
+
     - name: Generate and validate theme metadata
-      run: dotnet run --project tools/theme-content-generator/theme-content-generator.csproj -- --assets src/themes/wwwroot/assets --output src/themes/wwwroot/data
+      run: dotnet run --project tools/theme-content-generator/theme-content-generator.csproj -- --assets src/themes/wwwroot/assets --output src/themes/wwwroot/data --version-file src/themes/wwwroot/data/build-version.txt
 
     - name: Publish
       working-directory: ${{ github.workspace }}/src/themes/
-      run: dotnet publish ./themes.csproj -c Release -o ${{ github.workspace }}/release /p:BlazorEnableCompression=false /p:InformationalVersion=${{ github.sha }}
+      run: dotnet publish ./themes.csproj -c Release --no-build -o ${{ github.workspace }}/release /p:BlazorEnableCompression=false
 
     - name: Prepare static Pages artifact
       run: |
-        sed -i 's/__BUILD_VERSION__/${{ github.sha }}/g' ${{ github.workspace }}/release/wwwroot/version/index.html
-        sed -i 's/__DEPLOYMENT_TIMESTAMP__/'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'/g' ${{ github.workspace }}/release/wwwroot/version/index.html
         touch ${{ github.workspace }}/release/wwwroot/.nojekyll
 
     - name: Deploy to GitHub Pages
