@@ -15,12 +15,15 @@ foreach (var directory in Directory.EnumerateDirectories(outputRoot))
     if (Guid.TryParseExact(Path.GetFileName(directory), "D", out _))
         Directory.Delete(directory, recursive: true);
 WriteErrorResources(outputRoot);
-var themes = new List<ThemeData>();
-foreach (var directory in Directory.EnumerateDirectories(assetsRoot).OrderBy(Path.GetFileName, StringComparer.Ordinal))
-    themes.Add(ReadTheme(directory));
+var themes = Directory.EnumerateDirectories(assetsRoot)
+    .OrderBy(Path.GetFileName, StringComparer.Ordinal)
+    .Select(ReadTheme)
+    .ToArray();
 
-if (themes.Count == 0)
+if (themes.Length == 0)
     throw new InvalidOperationException("No theme asset directories were found.");
+
+ValidateThemeCatalog(themes);
 
 var jsonOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 WriteJson(Path.Combine(outputRoot, "themes.json"), new { themes = themes.Select(t => new { id = t.Id.ToString("D"), name = t.Name }) }, jsonOptions);
@@ -48,7 +51,7 @@ foreach (var theme in themes)
 foreach (var stale in Directory.EnumerateFiles(outputRoot, "*.manifest.json").Concat(Directory.EnumerateFiles(outputRoot, "*.cards.json")))
     File.Delete(stale);
 
-Console.WriteLine($"Generated metadata for {themes.Count} theme(s) in {outputRoot}.");
+Console.WriteLine($"Generated metadata for {themes.Length} theme(s) in {outputRoot}.");
 
 static ThemeData ReadTheme(string directory)
 {
@@ -79,6 +82,10 @@ static ThemeData ReadTheme(string directory)
     var cards = parsed.Where(p => p.Index is >= 1 and <= 15).OrderBy(p => p.Index).ToArray();
     if (cards.Length != 15 || cards.Select(c => c.Index).Distinct().Count() != 15)
         throw new InvalidOperationException($"Theme '{name}': card indexes must contain each value from 01 through 15 exactly once.");
+
+    if (cards.Select(c => c.Id).Distinct().Count() != cards.Length)
+        throw new InvalidOperationException($"Theme '{name}': card GUIDs must be unique.");
+
     return new ThemeData(themeId, name, selection.File, cards.Select(c => new CardData(c.Id, c.File)).ToArray());
 }
 
@@ -91,6 +98,25 @@ static ParsedAsset ParseAsset(string theme, string file)
     if (index is > 15)
         throw new InvalidOperationException($"Theme '{theme}', file '{file}': index must be 00 or 01..15.");
     return new ParsedAsset(match.Groups["prefix"].Value[0], index, match.Groups["name"].Value, id, file);
+}
+
+static void ValidateThemeCatalog(IReadOnlyList<ThemeData> themes)
+{
+    var duplicateName = themes
+        .GroupBy(theme => theme.Name, StringComparer.OrdinalIgnoreCase)
+        .FirstOrDefault(group => group.Count() > 1);
+
+    if (duplicateName is not null)
+        throw new InvalidOperationException(
+            $"Theme names must be unique case-insensitively. Duplicate name: '{duplicateName.Key}'.");
+
+    var duplicateId = themes
+        .GroupBy(theme => theme.Id)
+        .FirstOrDefault(group => group.Count() > 1);
+
+    if (duplicateId is not null)
+        throw new InvalidOperationException(
+            $"Theme IDs must be unique. Duplicate ID: '{duplicateId.Key:D}'.");
 }
 
 static string Checksum(IEnumerable<Guid> ids)
