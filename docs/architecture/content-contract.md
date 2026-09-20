@@ -4,13 +4,14 @@
 
 ### Theme
 
-- Type: GUID
+- Type: GUID.
 - Must remain stable after publication.
 - Used as the asset directory name.
+- The catalog and manifest must use the same canonical theme GUID.
 
 ### Card
 
-- Type: GUID
+- Type: GUID.
 - Must remain stable within a theme.
 - Used in card metadata and game configuration.
 
@@ -25,10 +26,10 @@ wwwroot/assets/<theme-guid>/
 Card image names follow:
 
 ```text
-xDD_XTheme_<card-guid>.webp
+<lowercase-theme-initial><DD>_<ThemeName>_<card-guid>.webp
 ```
 
-The content pipeline must preserve the original WebP files and must not embed their bytes into JSON.
+`00` is the selection asset and is excluded from the cards collection. `01` through `15` are the fifteen playable cards.
 
 ## Generated resources
 
@@ -39,7 +40,34 @@ The content pipeline must preserve the original WebP files and must not embed th
 /data/errors/*.json
 ```
 
-All generated JSON should be UTF-8, deterministic, and stable in property meaning.
+The theme catalog has the following shape:
+
+```json
+{
+  "themes": [
+    {
+      "id": "<theme-guid>",
+      "name": "<theme-name>"
+    }
+  ]
+}
+```
+
+All generated JSON is UTF-8, deterministic, and stable in property meaning.
+
+## Query resolution
+
+The public static routes are browser-side resolvers:
+
+- `/themes` -> `/data/themes.json`
+- `/themes?id=<theme-guid>` -> `/data/<theme-guid>/manifest.json`
+- `/themes?name=<theme-name>` -> `/data/<theme-guid>/manifest.json`
+- `/cards?id=<theme-guid>` -> `/data/<theme-guid>/cards.json`
+- `/cards?name=<theme-name>` -> `/data/<theme-guid>/cards.json`
+
+`id` and `name` may be supplied together only when they identify the same theme. Unknown or invalid queries redirect to the corresponding JSON error resource.
+
+The resolvers do not start Blazor WebAssembly. They are static HTML documents with minimal JavaScript.
 
 ## Client resolution
 
