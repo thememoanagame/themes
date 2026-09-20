@@ -17,7 +17,7 @@
     const redirectError = file => redirect(dataRoot + "errors/" + file);
 
     if (resolver === "themes" && !id && !name) {
-        redirect(dataRoot + "themes.json");
+        redirect(dataRoot + "version.json");
         return;
     }
 
