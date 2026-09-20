@@ -22,10 +22,10 @@ MemoAna MAUI
     │ HTTPS GET
     ▼
 MemoAna Themes (GitHub Pages)
-    ├── themes.json
-    ├── <theme-guid>/manifest.json
-    ├── <theme-guid>/cards.json
-    ├── errors/*.json
+    ├── data/themes.json
+    ├── data/<theme-guid>/manifest.json
+    ├── data/<theme-guid>/cards.json
+    ├── data/errors/*.json
     └── assets/<theme-guid>/*.webp
 ```
 
@@ -34,34 +34,36 @@ The backend and theme host have intentionally different responsibilities. The ba
 ## Application technology
 
 - .NET 10
-- Blazor WebAssembly
-- MudBlazor 9
-- Static hosting
+- Blazor WebAssembly and MudBlazor are retained only as compile-time Razor host/layout infrastructure.
+- Static HTML/JSON hosting
 - GitHub Pages as the primary deployment target
+
+## Static resolver architecture
+
+The public query routes are implemented as static HTML documents and do not start Blazor WebAssembly.
+
+- `/themes` without query parameters redirects to `/data/themes.json`.
+- `/themes?id=<guid>` resolves the catalog and redirects to `/data/<guid>/manifest.json`.
+- `/themes?name=<name>` resolves the catalog and redirects to `/data/<guid>/manifest.json`.
+- `/cards?id=<guid>` resolves the catalog and redirects to `/data/<guid>/cards.json`.
+- `/cards?name=<name>` resolves the catalog and redirects to `/data/<guid>/cards.json`.
+- Invalid queries redirect to stable JSON error resources.
+- `/version` is a static HTML diagnostic page.
+- Razor pages are removed; `MainLayout.razor` remains only for the Razor host to compile cleanly.
 
 ## Repository structure
 
 ```text
-.github/
-├── skills/
-│   ├── architecture/
-│   ├── blazor-wasm/
-│   ├── theme-content/
-│   ├── static-api/
-│   └── github-pages/
-└── workflows/
-
-docs/
-└── architecture/
-    ├── README.md
-    └── decisions/
-
-src/
-└── themes/
-    ├── Layout/
-    ├── Pages/
-    └── wwwroot/
-        └── assets/
+src/themes/
+├── Layout/
+│   └── MainLayout.razor
+└── wwwroot/
+    ├── assets/
+    ├── cards/index.html
+    ├── data/
+    ├── js/theme-resolution.js
+    ├── version/index.html
+    └── index.html
 ```
 
 ## Core decisions
@@ -70,9 +72,8 @@ src/
 2. Theme IDs are stable GUIDs.
 3. JSON metadata contains references, not image bytes.
 4. Metadata is generated from repository content at build/deployment time.
-5. Browser-side query/path resolution is allowed for SPA navigation, but it is not treated as server-side HTTP endpoint execution.
-6. Actual JSON resources should be represented by generated static JSON files.
-
-The `/themes` and `/cards` routes are browser-side resolvers only. They redirect to static JSON resources and are not HTTP API endpoints.
+5. Query resolution is performed by static HTML plus minimal JavaScript; it is not a server-side HTTP endpoint.
+6. The no-parameter `/themes` route resolves directly to the generated theme catalog.
+7. Actual JSON resources are represented by generated static JSON files.
 
 See the ADRs for rationale and constraints.

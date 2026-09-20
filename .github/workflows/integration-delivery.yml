@@ -2,19 +2,19 @@ name: Continuous Integration - Delivery
 
 on:
   push:
-    branches: [ main ] 
+    branches: [ main ]
     tags: [ "*" ]
   workflow_dispatch:
 
 permissions:
-  contents: write 
+  contents: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout 
+    - name: Checkout
       uses: actions/checkout@v7
 
     - name: Setup .NET SDK
@@ -29,12 +29,12 @@ jobs:
       working-directory: ${{ github.workspace }}/src/themes/
       run: dotnet publish ./themes.csproj -c Release -o ${{ github.workspace }}/release /p:BlazorEnableCompression=false /p:InformationalVersion=${{ github.sha }}
 
-    - name: Setup base path
+    - name: Prepare static Pages artifact
       run: |
-        sed -i 's/<base href="\/" \/>/<base href="\/themes\/" \/>/g' ${{ github.workspace }}/release/wwwroot/index.html
-        cp ${{ github.workspace }}/release/wwwroot/index.html ${{ github.workspace }}/release/wwwroot/404.html
+        sed -i 's/__BUILD_VERSION__/${{ github.sha }}/g' ${{ github.workspace }}/release/wwwroot/version/index.html
+        sed -i 's/__DEPLOYMENT_TIMESTAMP__/'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'/g' ${{ github.workspace }}/release/wwwroot/version/index.html
         touch ${{ github.workspace }}/release/wwwroot/.nojekyll
-        
+
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       if: startsWith(github.ref, 'refs/tags/')
