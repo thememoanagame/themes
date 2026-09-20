@@ -8,15 +8,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
     <ThemeVersionFile>$(MSBuildProjectDirectory)/wwwroot/data/build-version.txt</ThemeVersionFile>
     <ThemeVersion Condition="'$(ThemeVersion)' == '' and '$(GITHUB_REF_TYPE)' == 'tag'">$(GITHUB_REF_NAME)</ThemeVersion>
-    <ThemeVersion Condition="'$(ThemeVersion)' == ''">$(InformationalVersion)</ThemeVersion>
+    <ThemeVersion Condition="'$(ThemeVersion)' == '' and '$(InformationalVersion)' != ''">$(InformationalVersion)</ThemeVersion>
+    <ThemeVersion Condition="'$(ThemeVersion)' == ''">$(Version)</ThemeVersion>
   </PropertyGroup>
 
   <Target Name="WriteThemeVersionFile" BeforeTargets="BeforeBuild">
     <Error
       Condition="'$(ThemeVersion)' == ''"
-      Text="ThemeVersion could not be resolved. Set ThemeVersion explicitly or provide a valid InformationalVersion." />
+      Text="ThemeVersion could not be resolved. Set ThemeVersion, InformationalVersion, or Version explicitly." />
     <WriteLinesToFile
       File="$(ThemeVersionFile)"
       Lines="$(ThemeVersion)"
