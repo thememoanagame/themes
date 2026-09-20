@@ -23,8 +23,9 @@ MemoAna MAUI
     ▼
 MemoAna Themes (GitHub Pages)
     ├── themes.json
-    ├── <theme-guid>.manifest.json
-    ├── <theme-guid>.cards.json
+    ├── <theme-guid>/manifest.json
+    ├── <theme-guid>/cards.json
+    ├── errors/*.json
     └── assets/<theme-guid>/*.webp
 ```
 
@@ -71,5 +72,7 @@ src/
 4. Metadata is generated from repository content at build/deployment time.
 5. Browser-side query/path resolution is allowed for SPA navigation, but it is not treated as server-side HTTP endpoint execution.
 6. Actual JSON resources should be represented by generated static JSON files.
+
+The `/themes` and `/cards` routes are browser-side resolvers only. They redirect to static JSON resources and are not HTTP API endpoints.
 
 See the ADRs for rationale and constraints.

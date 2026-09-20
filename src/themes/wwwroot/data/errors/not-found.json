@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "THEME_NOT_FOUND",
+    "message": "The requested theme was not found.",
+    "resource": "theme",
+    "status": 404
+  }
+}

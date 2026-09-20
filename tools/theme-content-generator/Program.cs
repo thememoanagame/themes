@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 var argumentsMap = ParseArguments(args);
@@ -11,6 +10,11 @@ var outputRoot = Path.GetFullPath(argumentsMap.GetValueOrDefault("output") ?? th
 if (!Directory.Exists(assetsRoot))
     throw new DirectoryNotFoundException($"Assets directory does not exist: {assetsRoot}");
 
+Directory.CreateDirectory(outputRoot);
+foreach (var directory in Directory.EnumerateDirectories(outputRoot))
+    if (Guid.TryParseExact(Path.GetFileName(directory), "D", out _))
+        Directory.Delete(directory, recursive: true);
+WriteErrorResources(outputRoot);
 var themes = new List<ThemeData>();
 foreach (var directory in Directory.EnumerateDirectories(assetsRoot).OrderBy(Path.GetFileName, StringComparer.Ordinal))
     themes.Add(ReadTheme(directory));
@@ -18,13 +22,14 @@ foreach (var directory in Directory.EnumerateDirectories(assetsRoot).OrderBy(Pat
 if (themes.Count == 0)
     throw new InvalidOperationException("No theme asset directories were found.");
 
-Directory.CreateDirectory(outputRoot);
 var jsonOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 WriteJson(Path.Combine(outputRoot, "themes.json"), new { themes = themes.Select(t => new { id = t.Id.ToString("D"), name = t.Name }) }, jsonOptions);
 
 foreach (var theme in themes)
 {
-    WriteJson(Path.Combine(outputRoot, $"{theme.Id:D}.manifest.json"), new
+    var themeOutput = Path.Combine(outputRoot, theme.Id.ToString("D"));
+    Directory.CreateDirectory(themeOutput);
+    WriteJson(Path.Combine(themeOutput, "manifest.json"), new
     {
         id = theme.Id.ToString("D"),
         name = theme.Name,
@@ -34,11 +39,14 @@ foreach (var theme in themes)
         assetDirectory = $"/assets/{theme.Id:D}/",
         validationStatus = "valid"
     }, jsonOptions);
-    WriteJson(Path.Combine(outputRoot, $"{theme.Id:D}.cards.json"), new
+    WriteJson(Path.Combine(themeOutput, "cards.json"), new
     {
         cards = theme.Cards.Select(c => new { id = c.Id.ToString("D"), file = c.File, url = $"/assets/{theme.Id:D}/{c.File}" })
     }, jsonOptions);
 }
+
+foreach (var stale in Directory.EnumerateFiles(outputRoot, "*.manifest.json").Concat(Directory.EnumerateFiles(outputRoot, "*.cards.json")))
+    File.Delete(stale);
 
 Console.WriteLine($"Generated metadata for {themes.Count} theme(s) in {outputRoot}.");
 
@@ -91,6 +99,20 @@ static string Checksum(IEnumerable<Guid> ids)
     var input = string.Join("\n", ids.Select(id => id.ToString("D"))) + "\n";
     return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
 }
+
+static void WriteErrorResources(string outputRoot)
+{
+    var errorsRoot = Path.Combine(outputRoot, "errors");
+    Directory.CreateDirectory(errorsRoot);
+    WriteJson(Path.Combine(errorsRoot, "invalid-query.json"), Error("INVALID_QUERY", "The theme query is invalid.", "query", 400), new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    WriteJson(Path.Combine(errorsRoot, "not-found.json"), Error("THEME_NOT_FOUND", "The requested theme was not found.", "theme", 404), new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    WriteJson(Path.Combine(errorsRoot, "invalid-theme.json"), Error("INVALID_THEME", "The theme resource is invalid.", "theme", 422), new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    WriteJson(Path.Combine(errorsRoot, "invalid-manifest.json"), Error("INVALID_MANIFEST", "The theme manifest is invalid.", "manifest", 422), new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    WriteJson(Path.Combine(errorsRoot, "invalid-cards.json"), Error("INVALID_CARDS", "The theme cards resource is invalid.", "cards", 422), new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+}
+
+static object Error(string code, string message, string resource, int status) =>
+    new { error = new { code, message, resource, status } };
 
 static void WriteJson(string path, object value, JsonSerializerOptions options) =>
     File.WriteAllText(path, JsonSerializer.Serialize(value, options) + Environment.NewLine, new UTF8Encoding(false));

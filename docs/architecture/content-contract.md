@@ -34,8 +34,9 @@ The content pipeline must preserve the original WebP files and must not embed th
 
 ```text
 /data/themes.json
-/data/<theme-guid>.manifest.json
-/data/<theme-guid>.cards.json
+/data/<theme-guid>/manifest.json
+/data/<theme-guid>/cards.json
+/data/errors/*.json
 ```
 
 All generated JSON should be UTF-8, deterministic, and stable in property meaning.
@@ -51,3 +52,5 @@ A MemoAna client should:
 5. Cache metadata and assets according to the client cache policy.
 
 The backend may provide the ThemeId and deterministic board seed, but does not provide theme image bytes.
+
+The theme GUID is part of the resource path and must match `manifest.id`, the corresponding `themes.json` entry, and the asset directory GUID. Resolver failures use stable JSON payloads under `/data/errors/`.

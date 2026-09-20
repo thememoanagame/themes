@@ -15,8 +15,10 @@ wwwroot/
 │   └── <theme-guid>/*.webp
 └── data/
     ├── themes.json
-    ├── <theme-guid>.manifest.json
-    └── <theme-guid>.cards.json
+    ├── <theme-guid>/
+    │   ├── manifest.json
+    │   └── cards.json
+    └── errors/*.json
 ```
 
 ### themes.json
@@ -64,6 +66,8 @@ Generated output also prevents hand-maintained inventories from drifting away fr
 
 ## Validation and checksum
 
-Generation fails if a theme directory is not a GUID, if its WebP files do not contain exactly one `00` selection asset and one card for every index `01` through `15`, or if filename prefix, theme name, or GUID rules are violated. The `00` asset has its own valid asset GUID and is emitted as the manifest `url`; the manifest `id` remains the directory GUID. `00` is never emitted in the cards collection.
+Generation fails if a theme directory is not a GUID, if its WebP files do not contain exactly one `00` selection asset and one card for every index `01` through `15`, or if filename prefix, theme name, or GUID rules are violated. Each theme is emitted under `/data/<theme-guid>/`; that folder GUID, `manifest.id`, `themes.json.id`, and the asset folder GUID must agree. The `00` asset has its own valid asset GUID and is emitted as the manifest `url`; `00` is never emitted in the cards collection.
+
+The generator also emits stable query-error payloads under `/data/errors/`. Content validation errors fail generation and are not converted into successful metadata.
 
 The manifest checksum is SHA-256 over UTF-8 bytes of the card GUIDs in index order, formatted as lowercase `D`-format GUIDs with one trailing newline between/after entries. It depends only on card IDs.
