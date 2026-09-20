@@ -39,6 +39,21 @@ WriteJson(
     },
     jsonOptions);
 
+WriteJson(
+    Path.Combine(outputRoot, "version.json"),
+    new
+    {
+        themes = themes.Select(theme => new
+        {
+            id = theme.Id.ToString("D"),
+            name = theme.Name,
+            url = $"/assets/{theme.Id:D}/{theme.SelectionFile}"
+        }),
+        themeCount = themes.Length,
+        checksum = ThemeCatalogChecksum(themes)
+    },
+    jsonOptions);
+
 foreach (var theme in themes)
 {
     var themeOutput = Path.Combine(outputRoot, theme.Id.ToString("D"));
@@ -128,6 +143,17 @@ static void ValidateThemeCatalog(IReadOnlyList<ThemeData> themes)
     if (duplicateId is not null)
         throw new InvalidOperationException(
             $"Theme IDs must be unique. Duplicate ID: '{duplicateId.Key:D}'.");
+}
+
+static string ThemeCatalogChecksum(IEnumerable<ThemeData> themes)
+{
+    var input = string.Join(
+        "\n",
+        themes.Select(theme => $"{theme.Id:D}|{theme.Name}|{theme.SelectionFile}")) + "\n";
+
+    return Convert.ToHexString(
+        SHA256.HashData(Encoding.UTF8.GetBytes(input)))
+        .ToLowerInvariant();
 }
 
 static string Checksum(IEnumerable<Guid> ids)
