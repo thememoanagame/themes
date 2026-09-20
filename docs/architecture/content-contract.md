@@ -34,11 +34,14 @@ Card image names follow:
 ## Generated resources
 
 ```text
+/data/version.json
 /data/themes.json
 /data/<theme-guid>/manifest.json
 /data/<theme-guid>/cards.json
 /data/errors/*.json
 ```
+
+The version resource is the root catalog summary and contains the build version, theme count, catalog checksum, and theme names/selection URLs. The theme catalog remains available separately as `themes.json`.
 
 The theme catalog has the following shape:
 
@@ -47,7 +50,8 @@ The theme catalog has the following shape:
   "themes": [
     {
       "id": "<theme-guid>",
-      "name": "<theme-name>"
+      "name": "<theme-name>",
+      "url": "/assets/<theme-guid>/<selection-file>.webp"
     }
   ]
 }
@@ -59,7 +63,7 @@ All generated JSON is UTF-8, deterministic, and stable in property meaning.
 
 The public static routes are browser-side resolvers:
 
-- `/themes` -> `/data/themes.json`
+- `/themes` -> `/data/version.json`
 - `/themes?id=<theme-guid>` -> `/data/<theme-guid>/manifest.json`
 - `/themes?name=<theme-name>` -> `/data/<theme-guid>/manifest.json`
 - `/cards?id=<theme-guid>` -> `/data/<theme-guid>/cards.json`
