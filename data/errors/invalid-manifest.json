@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "INVALID_MANIFEST",
+    "message": "The theme manifest is invalid.",
+    "resource": "manifest",
+    "status": 422
+  }
+}

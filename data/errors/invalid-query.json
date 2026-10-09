@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "INVALID_QUERY",
+    "message": "The theme query is invalid.",
+    "resource": "query",
+    "status": 400
+  }
+}

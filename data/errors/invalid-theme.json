@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "INVALID_THEME",
+    "message": "The theme resource is invalid.",
+    "resource": "theme",
+    "status": 422
+  }
+}

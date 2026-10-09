@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "INVALID_CARDS",
+    "message": "The theme cards resource is invalid.",
+    "resource": "cards",
+    "status": 422
+  }
+}
